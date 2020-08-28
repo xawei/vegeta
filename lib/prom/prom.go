@@ -27,15 +27,6 @@ type PrometheusMetrics struct {
 //NewPrometheusMetrics same as NewPrometheusMetricsWithParams with default params:
 func NewPrometheusMetrics() (*PrometheusMetrics, error) {
 	return NewPrometheusMetricsWithParams("0.0.0.0:8880")
-}
-
-// NewPrometheusMetricsWithParams start a new Prometheus observer instance for exposing
-// metrics to Prometheus Servers.
-// Only one PrometheusMetrics can be instantiated at a time because of the underlaying
-// mechanisms of promauto.
-// Some metrics are requests/s, bytes in/out/s and failures/s
-// Options are:
-//   - bindURL: "[host]:[port]/[path]" to bind the listening socket to
 // For example, after using NewPrometheusMetricsWithParams("0.0.0.0:8880"),
 // during an "attack" you can call "curl http://127.0.0.0:8880" to see current metrics.
 // This endpoint can be configured in scrapper section of your Prometheus server.
