@@ -52,7 +52,7 @@ func TestPromServerObserve(t *testing.T) {
 	pm.Observe(r)
 	pm.Observe(r)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	resp, err := http.Get("http://localhost:8880")
 	assert.Nil(t, err, "Error calling prometheus metrics. err=%s", err)
 	assert.Equal(t, 200, resp.StatusCode, "Status code should be 200")

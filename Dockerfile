@@ -18,3 +18,5 @@ RUN make vegeta
 FROM alpine:3.12.0
 
 COPY --from=BUILD /vegeta/vegeta /bin/vegeta
+
+ENTRYPOINT [ "" ]

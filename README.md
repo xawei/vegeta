@@ -839,7 +839,7 @@ services:
     image: tsenart/vegeta
     ports:
       - 8880:8880
-    command: echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prom-enable=true > /dev/null 2>&1
+    command: sh -c 'echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prometheus-enable=true'
 
   prometheus:
     image: flaviostutz/prometheus:2.19.2.0
