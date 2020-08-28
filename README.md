@@ -96,12 +96,10 @@ attack command:
     	Output file (default "stdout")
   -prom-bind
       Host to bind Prometheus service to. Defaults to 0.0.0.0
-  -prom-enable
-      Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus. Defaults to false.
-  -prom-path
-      Prometheus metrics path. Defaults to /metrics
-  -prom-port
-      HTTP port for exposing Prometheus metrics at /metrics. Defaults to http://[host]:8880/metrics
+  -prometheus-enable
+      Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus with default bind (0.0.0.0:8880). Defaults to false.
+  -prometheus-url
+      Prometheus metrics bind. Defaults to 0.0.0.0:8880
   -proxy-header value
     	Proxy CONNECT header
   -rate value
@@ -735,7 +733,7 @@ It'll read and sort them by timestamp before generating reports.
 vegeta report *.bin
 ```
 
-Another way to gather results in distributed tests is to use the built-in Prometheus Exporter and configure a Prometheus Server to get test results from all Vegeta instances. See `attack` option "prom-enable" for more details and a complete example at section "Prometheus Exporter Support"
+Another way to gather results in distributed tests is to use the built-in Prometheus Exporter and configure a Prometheus Server to get test results from all Vegeta instances. See `attack` option "prom-enable" for more details and a complete example in the section "Prometheus Exporter Support"
 
 ## Usage: Real-time Analysis
 
@@ -838,13 +836,10 @@ The following metrics are exposed:
 version: '3.5'
 services:
   vegeta:
-    build: .
+    image: tsenart/vegeta
     ports:
       - 8880:8880
-    environment:
-      - TARGET_URL=http://www.google.com
-      - DURATION=300s
-      - REQUESTS_PER_SECOND=1
+    command: echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prom-enable=true > /dev/null 2>&1
 
   prometheus:
     image: flaviostutz/prometheus:2.19.2.0
@@ -858,7 +853,7 @@ services:
 
 * Run `docker-compose up -d`
 
-* Run `curl localhost:8880/metrics` to see plain Prometheus Exporter endpoint contents
+* Run `curl localhost:8880` to see plain Prometheus Exporter endpoint contents
 
 * Open Prometheus server instance with your browser at http://localhost:9090
 

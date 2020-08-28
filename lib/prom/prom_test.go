@@ -52,7 +52,8 @@ func TestPromServerObserve(t *testing.T) {
 	pm.Observe(r)
 	pm.Observe(r)
 
-	resp, err := http.Get("http://localhost:8880/metrics")
+	time.Sleep(1 * time.Second)
+	resp, err := http.Get("http://localhost:8880")
 	assert.Nil(t, err, "Error calling prometheus metrics. err=%s", err)
 	assert.Equal(t, 200, resp.StatusCode, "Status code should be 200")
 
@@ -69,7 +70,7 @@ func TestPromServerObserve(t *testing.T) {
 	r.Error = "REQUEST FAILED"
 	pm.Observe(r)
 
-	resp, err = http.Get("http://localhost:8880/metrics")
+	resp, err = http.Get("http://localhost:8880")
 	assert.Nil(t, err, "Error calling prometheus metrics. err=%s", err)
 	assert.Equal(t, 200, resp.StatusCode, "Status code should be 200")
 

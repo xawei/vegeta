@@ -29,9 +29,7 @@ func attackCmd() command {
 		rate:         vegeta.Rate{Freq: 50, Per: time.Second},
 		maxBody:      vegeta.DefaultMaxBody,
 		promEnable:   false,
-		promBind:     "0.0.0.0",
-		promPort:     8880,
-		promPath:     "/metrics",
+		promURL:      "0.0.0.0:8880",
 	}
 	fs.StringVar(&opts.name, "name", "", "Attack name")
 	fs.StringVar(&opts.targetsf, "targets", "stdin", "Targets file")
@@ -61,10 +59,8 @@ func attackCmd() command {
 	fs.Var(&opts.laddr, "laddr", "Local IP address")
 	fs.BoolVar(&opts.keepalive, "keepalive", true, "Use persistent connections")
 	fs.StringVar(&opts.unixSocket, "unix-socket", "", "Connect over a unix socket. This overrides the host address in target URLs")
-	fs.BoolVar(&opts.promEnable, "prom-enable", false, "Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus. Defaults to false.")
-	fs.StringVar(&opts.promBind, "prom-bind", "0.0.0.0", "Host to bind Prometheus service to. Defaults to 0.0.0.0")
-	fs.IntVar(&opts.promPort, "prom-port", 8880, "HTTP port for exposing Prometheus metrics at /metrics. Defaults to http://[host]:8880/metrics")
-	fs.StringVar(&opts.promPath, "prom-path", "/metrics", "Prometheus metrics path. Defaults to /metrics")
+	fs.BoolVar(&opts.promEnable, "prometheus-enable", false, "Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus using default parameters(bind to 0.0.0.0:8880). Defaults to false.")
+	fs.StringVar(&opts.promURL, "prometheus-url", "", "Enable Prometheus metrics with specific bind parameters in format [bind ip]:[bind port]. Example: 0.0.0.0:8880")
 	systemSpecificFlags(fs, opts)
 
 	return command{fs, func(args []string) error {
@@ -108,10 +104,8 @@ type attackOpts struct {
 	keepalive      bool
 	resolvers      csl
 	unixSocket     string
-	promBind       string
-	promPort       int
 	promEnable     bool
-	promPath       string
+	promURL        string
 }
 
 // attack validates the attack arguments, sets up the
@@ -185,9 +179,13 @@ func attack(opts *attackOpts) (err error) {
 		return err
 	}
 
-	var promMetrics prom.PrometheusMetrics
-	if opts.promEnable {
-		promMetrics, err = prom.NewPrometheusMetricsWithParams(opts.promBind, opts.promPort, opts.promPath)
+	var promMetrics *prom.PrometheusMetrics
+	if opts.promEnable || opts.promURL != "" {
+		purl := opts.promURL
+		if purl == "" {
+			purl = "0.0.0.0:8880"
+		}
+		promMetrics, err = prom.NewPrometheusMetricsWithParams(purl)
 		if err != nil {
 			return err
 		}

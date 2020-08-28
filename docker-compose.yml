@@ -7,10 +7,7 @@ services:
     image: flaviostutz/vegeta
     ports:
       - 8880:8880
-    environment: 
-      - TARGET_URL=https://www.yahoo.com
-      - DURATION=60s
-      - REQUESTS_PER_SECOND=5
+    command: echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prom-enable=true > /dev/null 2>&1
 
   prometheus:
     image: flaviostutz/prometheus
