@@ -27,6 +27,9 @@ type PrometheusMetrics struct {
 //NewPrometheusMetrics same as NewPrometheusMetricsWithParams with default params:
 func NewPrometheusMetrics() (*PrometheusMetrics, error) {
 	return NewPrometheusMetricsWithParams("0.0.0.0:8880")
+}
+
+// NewPrometheusMetricsWithParams creates a new Prometheus Metrics to Observe attack results and expose metrics
 // For example, after using NewPrometheusMetricsWithParams("0.0.0.0:8880"),
 // during an "attack" you can call "curl http://127.0.0.0:8880" to see current metrics.
 // This endpoint can be configured in scrapper section of your Prometheus server.
