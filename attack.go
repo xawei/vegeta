@@ -28,7 +28,6 @@ func attackCmd() command {
 		laddr:        localAddr{&vegeta.DefaultLocalAddr},
 		rate:         vegeta.Rate{Freq: 50, Per: time.Second},
 		maxBody:      vegeta.DefaultMaxBody,
-		promEnable:   false,
 		promURL:      "0.0.0.0:8880",
 	}
 	fs.StringVar(&opts.name, "name", "", "Attack name")
@@ -59,7 +58,6 @@ func attackCmd() command {
 	fs.Var(&opts.laddr, "laddr", "Local IP address")
 	fs.BoolVar(&opts.keepalive, "keepalive", true, "Use persistent connections")
 	fs.StringVar(&opts.unixSocket, "unix-socket", "", "Connect over a unix socket. This overrides the host address in target URLs")
-	fs.BoolVar(&opts.promEnable, "prometheus-enable", false, "Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus using default parameters(bind to 0.0.0.0:8880). Defaults to false.")
 	fs.StringVar(&opts.promURL, "prometheus-url", "", "Enable Prometheus metrics with specific bind parameters in format [bind ip]:[bind port]. Example: 0.0.0.0:8880")
 	systemSpecificFlags(fs, opts)
 
@@ -104,7 +102,6 @@ type attackOpts struct {
 	keepalive      bool
 	resolvers      csl
 	unixSocket     string
-	promEnable     bool
 	promURL        string
 }
 
@@ -180,12 +177,8 @@ func attack(opts *attackOpts) (err error) {
 	}
 
 	var promMetrics *prom.PrometheusMetrics
-	if opts.promEnable || opts.promURL != "" {
-		purl := opts.promURL
-		if purl == "" {
-			purl = "0.0.0.0:8880"
-		}
-		promMetrics, err = prom.NewPrometheusMetricsWithParams(purl)
+	if opts.promURL != "" {
+		promMetrics, err = prom.NewPrometheusMetricsWithParams(opts.promURL)
 		if err != nil {
 			return err
 		}
@@ -223,7 +216,7 @@ func attack(opts *attackOpts) (err error) {
 			if !ok {
 				return nil
 			}
-			if opts.promEnable {
+			if opts.promURL != "" {
 				promMetrics.Observe(r)
 			}
 			if err = enc.Encode(r); err != nil {

@@ -3,14 +3,16 @@ package prom
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
-	"regexp"
+	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	vegeta "github.com/tsenart/vegeta/v12/lib"
 )
 
@@ -26,32 +28,23 @@ type PrometheusMetrics struct {
 
 //NewPrometheusMetrics same as NewPrometheusMetricsWithParams with default params:
 func NewPrometheusMetrics() (*PrometheusMetrics, error) {
-	return NewPrometheusMetricsWithParams("0.0.0.0:8880")
+	return NewPrometheusMetricsWithParams("http://0.0.0.0:8880")
 }
 
 // NewPrometheusMetricsWithParams creates a new Prometheus Metrics to Observe attack results and expose metrics
-// For example, after using NewPrometheusMetricsWithParams("0.0.0.0:8880"),
+// For example, after using NewPrometheusMetricsWithParams("http://0.0.0.0:8880"),
 // during an "attack" you can call "curl http://127.0.0.0:8880" to see current metrics.
 // This endpoint can be configured in scrapper section of your Prometheus server.
 func NewPrometheusMetricsWithParams(bindURL string) (*PrometheusMetrics, error) {
 
 	//parse bind url elements
-	re := regexp.MustCompile("(.+):([0-9]+)")
-	rr := re.FindAllStringSubmatch(bindURL, 3)
-	bindHost := ""
-	bindPort := 0
-	var err error
-	if len(rr) == 1 {
-		if len(rr[0]) == 3 {
-			bindHost = rr[0][1]
-			bindPort, err = strconv.Atoi(rr[0][2])
-			if err != nil {
-				return nil, err
-			}
-		}
+	p, err := url.Parse(bindURL)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid bindURL %s. Must be in format 'http://0.0.0.0:8880'. err=%s", bindURL, err)
 	}
-	if bindHost == "" {
-		return nil, fmt.Errorf("Invalid bindURL %s. Must be in format '0.0.0.0:8880'", bindURL)
+	bindHost, bindPort, err := net.SplitHostPort(p.Host)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid bindURL %s. Must be in format 'http://0.0.0.0:8880'. err=%s", bindURL, err)
 	}
 
 	pm := &PrometheusMetrics{
@@ -101,7 +94,7 @@ func NewPrometheusMetricsWithParams(bindURL string) (*PrometheusMetrics, error) 
 
 	//setup prometheus metrics http server
 	pm.srv = http.Server{
-		Addr:    fmt.Sprintf("%s:%d", bindHost, bindPort),
+		Addr:    fmt.Sprintf("%s:%s", bindHost, bindPort),
 		Handler: promhttp.HandlerFor(pm.registry, promhttp.HandlerOpts{}),
 	}
 

@@ -94,12 +94,8 @@ attack command:
     	Attack name
   -output string
     	Output file (default "stdout")
-  -prom-bind
-      Host to bind Prometheus service to. Defaults to 0.0.0.0
-  -prometheus-enable
-      Enable Prometheus metrics endpoint so that requests can be monitored by Prometheus with default bind (0.0.0.0:8880). Defaults to false.
   -prometheus-url
-      Prometheus metrics bind. Defaults to 0.0.0.0:8880
+      Prometheus metrics bind url for enabling Prometheus metrics exporter. Ex.: "http://0.0.0.0:8880"
   -proxy-header value
     	Proxy CONNECT header
   -rate value
@@ -815,7 +811,7 @@ Just pass a new number as the argument to change it.
 
 Vegeta has a built-in Prometheus Exporter that may be enabled during "attacks" so that you can point any Prometheus instance to Vegeta instances and get some metrics about http requests performance and about Vegeta process itself.
 
-To enable Prometheus Exporter on command line, see flags with "prom-" prefix.
+To enable the Prometheus Exporter on the command line, use the "prometheus-url" flag.
 To enable Prometheus Exporter on lib usage, add Option "PrometheusEnable" and/or "PrometheusSettings".
 
 Prometheus HTTP endpoint will be available only during the lifespan of an "attack" and will be closed right after the attack is finished.
@@ -839,7 +835,7 @@ services:
     image: tsenart/vegeta
     ports:
       - 8880:8880
-    command: sh -c 'echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prometheus-enable=true'
+    command: sh -c 'echo "GET https://www.yahoo.com" | vegeta attack -duration=30s -rate=5 -prometheus-url=http://0.0.0.0:8880'
 
   prometheus:
     image: flaviostutz/prometheus:2.19.2.0
