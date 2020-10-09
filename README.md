@@ -809,12 +809,12 @@ Just pass a new number as the argument to change it.
 
 ## Prometheus Support
 
-Vegeta has a built-in Prometheus Exporter that may be enabled during "attacks" so that you can point any Prometheus instance to Vegeta instances and get some metrics about http requests performance and about Vegeta process itself.
+Vegeta has a built-in Prometheus Exporter that may be enabled during "attacks" so that you can point any Prometheus instance to Vegeta instances and get some metrics about http requests performance and about the Vegeta process itself.
 
 To enable the Prometheus Exporter on the command line, use the "prometheus-url" flag.
 To enable Prometheus Exporter on lib usage, add Option "PrometheusEnable" and/or "PrometheusSettings".
 
-Prometheus HTTP endpoint will be available only during the lifespan of an "attack" and will be closed right after the attack is finished.
+A Prometheus HTTP endpoint will be available only during the lifespan of an "attack" and will be closed right after the attack is finished.
 
 The following metrics are exposed:
 
