@@ -19,6 +19,7 @@ type PrometheusMetrics struct {
 	requestBytesInCounter   *prometheus.CounterVec
 	requestBytesOutCounter  *prometheus.CounterVec
 	requestFailCounter      *prometheus.CounterVec
+	requestSuccessCounter   *prometheus.CounterVec
 	listenPort              net.Listener
 }
 
@@ -81,6 +82,15 @@ func NewPrometheusMetricsWithParams(bindHost string, bindPort int, metricsPath s
 		"message",
 	})
 
+	pm.requestSuccessCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "request_success_count",
+		Help: "Internal failures that prevented a hit to the target server",
+	}, []string{
+		"method",
+		"url",
+		"message",
+	})
+
 	//setup prometheus metrics http server
 	router := mux.NewRouter()
 	router.Handle(metricsPath, promhttp.Handler())
@@ -117,5 +127,7 @@ func (pm *PrometheusMetrics) Observe(res *vegeta.Result) {
 	pm.requestSecondsHistogram.WithLabelValues(res.Method, res.URL, fmt.Sprintf("%d", res.Code)).Observe(float64(res.Latency) / float64(time.Second))
 	if res.Error != "" {
 		pm.requestFailCounter.WithLabelValues(res.Method, res.URL, res.Error)
+	} else {
+		pm.requestSuccessCounter.WithLabelValues(res.Method, res.URL, "success")
 	}
 }
